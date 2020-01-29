@@ -214,7 +214,7 @@ def create_pool(batch_service_client, pool_id):
         target_dedicated_nodes=config._DEDICATED_POOL_NODE_COUNT,
         target_low_priority_nodes=config._LOW_PRIORITY_POOL_NODE_COUNT,
         start_task=batchmodels.StartTask(
-            command_line="/bin/bash -c \"apt-get update\"",
+            command_line="/bin/bash -c \"apt-get update && apt-get install wget && wget http://cab.spbu.ru/files/release3.14.0/SPAdes-3.14.0-Linux.tar.gz && tar -xf SPAdes-3.14.0-Linux.tar.gz\"",
             wait_for_success=True,
             user_identity=batchmodels.UserIdentity(
                 auto_user=batchmodels.AutoUserSpecification(
@@ -265,7 +265,7 @@ def add_tasks(batch_service_client, job_id, input_files, output_container_sas_ur
         input_file_path1 = input_files[2*idx].file_path
         input_file_path2 = input_files[2*idx+1].file_path
         output_folder_path = input_file_path1.split('/')[1].split('_')[0]
-        command = "/bin/bash -c \"/mnt/batch/tasks/applications/spades3.14.02020-01-29-11-51/SPAdes-3.14.0-Linux/bin/spades.py -1 {} -2 {} -t 64 -m 250 --plasmid --meta -o {} \"".format(
+        command = "/bin/bash -c \"/mnt/batch/tasks/startup/wd/SPAdes-3.14.0-Linux/bin/spades.py -1 {} -2 {} -t 64 -m 250 --plasmid --meta -o {} \"".format(
             input_file_path1, input_file_path2, output_folder_path)
         tasks.append(batch.models.TaskAddParameter(
             id='Task{}'.format(idx),
@@ -333,8 +333,8 @@ if __name__ == '__main__':
     # Use the blob client to create the containers in Azure Storage if they
     # don't yet exist.
 
-    input_container_name = 'vcarrcontainer2'
-    output_container_name = 'metaplasmidspades'
+    input_container_name = config._INPUT_CONTAINER
+    output_container_name = config._OUTPUT_CONTAINER
     # blob_client.create_container(input_container_name, fail_on_exist=False)
     blob_client.create_container(output_container_name, fail_on_exist=False)
     # print('Container [{}] created.'.format(input_container_name))
@@ -345,8 +345,8 @@ if __name__ == '__main__':
 
     with open('merged_filtered_reads.txt', 'r') as file:
         for sample in file:
-            file_path1 = 'MERGED_FILTERED_READS/{}_trimmo_trimmed_and_filtered_1.fastq.gz'.format(sample.split('\n')[0])
-            file_path2 = 'MERGED_FILTERED_READS/{}_trimmo_trimmed_and_filtered_2.fastq.gz'.format(sample.split('\n')[0])
+            file_path1 = config._INPUT_BLOB_PREFIX + '/{}_trimmo_trimmed_and_filtered_1.fastq.gz'.format(sample.split('\n')[0])
+            file_path2 = config._INPUT_BLOB_PREFIX + '/{}_trimmo_trimmed_and_filtered_2.fastq.gz'.format(sample.split('\n')[0])
             input_file_paths.append(file_path1)
             input_file_paths.append(file_path2)
 
@@ -375,7 +375,7 @@ if __name__ == '__main__':
     try:
         # Create the pool that will contain the compute nodes that will execute the
         # tasks.
-        #create_pool(batch_client, config._POOL_ID)
+        create_pool(batch_client, config._POOL_ID)
 
         # Create the job that will run the tasks.
         create_job(batch_client, config._JOB_ID, config._POOL_ID)
@@ -388,7 +388,8 @@ if __name__ == '__main__':
         # Pause execution until tasks reach Completed state.
         # wait_for_tasks_to_complete(batch_client, config._JOB_ID, datetime.timedelta(minutes=30))
 
-        print("Tasks submitted.")
+        #print("  Success! All tasks reached the 'Completed' state within the "
+        #      "specified timeout period.")
 
     except batchmodels.BatchErrorException as err:
         print_batch_exception(err)
