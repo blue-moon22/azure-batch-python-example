@@ -1,22 +1,27 @@
 ---
 page_type: sample
-description: "A Python application that uses Batch to process media files in parallel with the ffmpeg open-source tool."
+description: "A Python application that uses Azure Batch to process genomes in parallel with the SPAdes assembly tool."
 languages:
 - python
 products:
 - azure
 ---
 
-# Batch Python File Processing with ffmpeg
+# Batch Python File Processing with SPAdes
 
-A Python application that uses Batch to process media files in parallel with the [ffmpeg](http://ffmpeg.org/) open-source tool. 
-
-For details and explanation, see the accompanying article [Run a parallel workload with Azure Batch using the Python API](https://docs.microsoft.com/azure/batch/tutorial-parallel-python).
+A Python application that uses Batch to process genomic files in parallel with the [SPAdes](http://cab.spbu.ru/software/spades/) assembly tool.
+Original tutorial shows how to upload files into a container in a Storage account before processing them in Batch. This example assumes fastq.gz files are already available in a container.
 
 ## Prerequisites
 
 - Azure Batch account and linked general-purpose Azure Storage account
 - Python 2.7 or 3.3 or later including pip
+
+## Instructions
+
+- Clone repository
+`git clone https://github.com/blue-moon22/azure-batch-python-example.git`
+- Follow original tutorial [Run a parallel workload with Azure Batch using the Python API](https://docs.microsoft.com/azure/batch/tutorial-parallel-python).
 
 ## Resources
 
